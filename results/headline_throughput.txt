@@ -1,0 +1,28 @@
+[throughput] N=10000000 K=1000 dup=0.20 dist=uniform
+  stdlib-heap                    5.10 ms       1961.2 Mops/s
+  stdlib-nth_element            46.80 ms        213.7 Mops/s
+  our-membrane                   2.66 ms       3766.1 Mops/s
+  our-async                      2.99 ms       3346.4 Mops/s
+  dedup-stdlib-heap            935.30 ms         10.7 Mops/s   [dedup]
+  dedup-absl-heap              513.10 ms         19.5 Mops/s   [dedup]
+  dedup-fastset-heap           211.05 ms         47.4 Mops/s   [dedup]
+  our-pipeline-RANK              5.02 ms       1993.8 Mops/s   [dedup]
+  our-pipeline-FILTER          107.83 ms         92.7 Mops/s   [dedup]
+{
+  "mode": "throughput",
+  "dist": "uniform",
+  "n": 10000000.000000,
+  "k": 1000.000000,
+  "dup_ratio": 0.200000,
+  "results": [
+    {"name": "stdlib-heap", "dedup": false, "ms": 5.0989, "mops": 1961.2169},
+    {"name": "stdlib-nth_element", "dedup": false, "ms": 46.8027, "mops": 213.6628},
+    {"name": "our-membrane", "dedup": false, "ms": 2.6553, "mops": 3766.1237},
+    {"name": "our-async", "dedup": false, "ms": 2.9882, "mops": 3346.4402},
+    {"name": "dedup-stdlib-heap", "dedup": true, "ms": 935.3012, "mops": 10.6917},
+    {"name": "dedup-absl-heap", "dedup": true, "ms": 513.1024, "mops": 19.4893},
+    {"name": "dedup-fastset-heap", "dedup": true, "ms": 211.0528, "mops": 47.3815},
+    {"name": "our-pipeline-RANK", "dedup": true, "ms": 5.0155, "mops": 1993.8025},
+    {"name": "our-pipeline-FILTER", "dedup": true, "ms": 107.8350, "mops": 92.7343}
+  ]
+}

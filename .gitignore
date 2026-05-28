@@ -1,0 +1,6 @@
+build/
+venv/
+.DS_Store
+*.o
+*.dSYM/
+.claude/

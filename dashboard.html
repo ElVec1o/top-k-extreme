@@ -1,0 +1,770 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Top-K Extreme — Benchmark Dashboard</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
+<style>
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg:       #0d1117;
+    --surface:  #161b22;
+    --border:   #21262d;
+    --accent:   #06b6d4;
+    --accent2:  #22d3ee;
+    --teal:     #14b8a6;
+    --green:    #3fb950;
+    --red:      #f43f5e;
+    --yellow:   #f59e0b;
+    --violet:   #7c3aed;
+    --text:     #e6edf3;
+    --muted:    #8b949e;
+    --card-bg:  #11192a;
+  }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    font-size: 14px;
+    line-height: 1.6;
+    min-height: 100vh;
+  }
+
+  /* ── HERO ───────────────────────────────────────────── */
+  .hero {
+    background: linear-gradient(135deg, #0d1117 0%, #042a35 50%, #0d1117 100%);
+    border-bottom: 1px solid var(--border);
+    padding: 56px 40px 40px;
+    position: relative;
+    overflow: hidden;
+  }
+  .hero::before {
+    content: '';
+    position: absolute; inset: 0;
+    background:
+      radial-gradient(ellipse 60% 40% at 70% 50%, rgba(6,182,212,.18) 0%, transparent 70%),
+      radial-gradient(ellipse 40% 30% at 20% 30%, rgba(20,184,166,.08) 0%, transparent 60%);
+    pointer-events: none;
+  }
+  .hero-inner { max-width: 1400px; margin: 0 auto; position: relative; }
+
+  .hero-badge {
+    display: inline-flex; align-items: center; gap: 8px;
+    background: rgba(6,182,212,.15);
+    border: 1px solid rgba(6,182,212,.4);
+    border-radius: 20px;
+    padding: 4px 14px;
+    font-size: 11px; font-weight: 600; letter-spacing: .08em;
+    color: var(--accent2);
+    text-transform: uppercase;
+    margin-bottom: 20px;
+    animation: fadeUp .6s ease both;
+  }
+  .hero-badge::before { content: '●'; font-size: 8px; color: var(--green); }
+
+  h1 {
+    font-size: clamp(28px, 4vw, 48px);
+    font-weight: 800;
+    letter-spacing: -.02em;
+    line-height: 1.1;
+    animation: fadeUp .6s ease .1s both;
+  }
+  h1 span { color: var(--accent2); }
+
+  .hero-sub {
+    margin-top: 10px;
+    font-size: 15px; color: var(--muted); font-weight: 400;
+    max-width: 800px;
+    animation: fadeUp .6s ease .2s both;
+  }
+  .hero-sub code {
+    background: rgba(6,182,212,.12);
+    border: 1px solid rgba(6,182,212,.25);
+    border-radius: 4px;
+    padding: 1px 6px;
+    font-family: 'SF Mono', 'Fira Code', monospace;
+    font-size: 12px;
+    color: var(--accent2);
+  }
+
+  .hero-links { margin-top: 18px; display: flex; gap: 12px; flex-wrap: wrap; }
+  .hero-links a {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 8px 14px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: rgba(255,255,255,.02);
+    color: var(--text);
+    text-decoration: none;
+    font-size: 13px;
+    font-weight: 500;
+    transition: all .2s;
+  }
+  .hero-links a:hover { border-color: var(--accent); color: var(--accent2); }
+
+  /* ── STATS BAR ──────────────────────────────────────── */
+  .stats-bar {
+    display: grid; grid-template-columns: repeat(4, 1fr); gap: 1px;
+    background: var(--border);
+    margin-top: 40px;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    overflow: hidden;
+    animation: fadeUp .6s ease .3s both;
+  }
+  .stat {
+    background: rgba(22,27,34,.8);
+    padding: 20px 24px;
+    display: flex; flex-direction: column; gap: 4px;
+    transition: background .2s;
+  }
+  .stat:hover { background: rgba(6,182,212,.08); }
+  .stat-label {
+    font-size: 11px; font-weight: 600; letter-spacing: .08em;
+    text-transform: uppercase; color: var(--muted);
+  }
+  .stat-value {
+    font-size: 32px; font-weight: 800; letter-spacing: -.02em;
+    color: var(--accent2);
+    font-variant-numeric: tabular-nums;
+  }
+  .stat-unit { font-size: 14px; color: var(--muted); font-weight: 500; }
+
+  /* ── MAIN ─────────────────────────────────────────── */
+  .container { max-width: 1400px; margin: 0 auto; padding: 40px; }
+
+  .section {
+    margin-bottom: 48px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 28px 32px;
+    animation: fadeUp .6s ease both;
+    opacity: 0;
+  }
+  .section-header { margin-bottom: 20px; }
+  .section-title {
+    display: inline-flex; align-items: center; gap: 8px;
+    font-size: 11px; font-weight: 700; letter-spacing: .12em;
+    color: var(--accent2); text-transform: uppercase; margin-bottom: 6px;
+  }
+  .section-title::before {
+    content: ''; width: 20px; height: 2px;
+    background: var(--accent); border-radius: 2px;
+  }
+  h2 { font-size: 22px; font-weight: 700; letter-spacing: -.01em; margin: 4px 0 8px; }
+  .section-desc { color: var(--muted); font-size: 14px; max-width: 800px; }
+
+  .chart-wrap { position: relative; height: 380px; margin-top: 24px; }
+  .chart-wrap.tall { height: 460px; }
+
+  .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-top: 24px; }
+  @media (max-width: 800px) { .two-col { grid-template-columns: 1fr; } }
+
+  /* ── TABLES ─────────────────────────────────────── */
+  table.cmp {
+    width: 100%; border-collapse: collapse; margin-top: 24px;
+    font-size: 13px;
+  }
+  table.cmp th, table.cmp td {
+    padding: 10px 12px; border-bottom: 1px solid var(--border);
+    text-align: right; font-variant-numeric: tabular-nums;
+  }
+  table.cmp th { color: var(--muted); font-weight: 600; font-size: 11px; text-transform: uppercase; letter-spacing: .06em; }
+  table.cmp td:first-child, table.cmp th:first-child { text-align: left; }
+  table.cmp tr.hl { background: rgba(6,182,212,.06); }
+  table.cmp tr.hl td:first-child { color: var(--accent2); font-weight: 600; }
+  table.cmp .star { color: var(--yellow); }
+
+  /* ── ARCHITECTURE CARDS ─────────────────────────── */
+  .arch-grid {
+    display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; margin-top: 24px;
+  }
+  @media (max-width: 800px) { .arch-grid { grid-template-columns: 1fr; } }
+  .arch-card {
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 20px;
+    position: relative;
+    overflow: hidden;
+  }
+  .arch-card::before {
+    content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px;
+    background: linear-gradient(90deg, var(--accent), var(--teal));
+  }
+  .arch-icon {
+    font-size: 22px; margin-bottom: 8px;
+    display: inline-block; padding: 6px 10px; border-radius: 8px;
+    background: rgba(6,182,212,.1);
+  }
+  .arch-card h3 { font-size: 16px; font-weight: 700; margin-bottom: 4px; }
+  .arch-card .arch-sub { font-size: 12px; color: var(--muted); margin-bottom: 12px; }
+  .arch-card ul { list-style: none; padding: 0; margin: 12px 0 0; }
+  .arch-card li {
+    font-size: 13px; padding: 4px 0;
+    color: var(--text); border-bottom: 1px dashed rgba(255,255,255,.06);
+  }
+  .arch-card li:last-child { border-bottom: 0; }
+  .arch-card li strong { color: var(--accent2); font-weight: 600; }
+
+  /* ── LIVE DATA FORM ─────────────────────────────── */
+  .form {
+    background: var(--card-bg); border: 1px solid var(--border);
+    border-radius: 12px; padding: 20px; margin-top: 20px;
+  }
+  textarea.bench {
+    width: 100%; min-height: 140px;
+    background: var(--bg); color: var(--text);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 12px; font-family: 'SF Mono', 'Fira Code', monospace; font-size: 12px;
+    line-height: 1.5;
+    resize: vertical;
+  }
+  textarea.bench:focus { outline: none; border-color: var(--accent); }
+  .form-actions { margin-top: 12px; display: flex; gap: 10px; }
+  .btn {
+    padding: 9px 16px; border-radius: 8px; border: 1px solid var(--border);
+    background: var(--card-bg); color: var(--text);
+    font-size: 13px; font-weight: 600; cursor: pointer;
+    transition: all .2s;
+  }
+  .btn:hover { border-color: var(--accent); color: var(--accent2); }
+  .btn.primary {
+    background: var(--accent); color: white; border-color: var(--accent);
+  }
+  .btn.primary:hover { background: var(--accent2); color: var(--bg); }
+  .hint { margin-top: 10px; color: var(--muted); font-size: 12px; }
+  .hint code {
+    background: rgba(6,182,212,.1); color: var(--accent2);
+    padding: 1px 5px; border-radius: 3px;
+    font-family: 'SF Mono', monospace; font-size: 11px;
+  }
+
+  /* ── animations ─────────────────────────────────── */
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  .section:nth-child(1) { animation-delay: .1s; }
+  .section:nth-child(2) { animation-delay: .15s; }
+  .section:nth-child(3) { animation-delay: .2s; }
+  .section:nth-child(4) { animation-delay: .25s; }
+  .section:nth-child(5) { animation-delay: .3s; }
+  .section:nth-child(6) { animation-delay: .35s; }
+
+  /* ── FOOTER ──────────────────────────────────────── */
+  footer {
+    text-align: center; padding: 32px 16px;
+    color: var(--muted); font-size: 12px;
+    border-top: 1px solid var(--border);
+    margin-top: 20px;
+  }
+  footer a { color: var(--accent2); text-decoration: none; }
+</style>
+</head>
+<body>
+
+<div class="hero">
+  <div class="hero-inner">
+    <div class="hero-badge">benchmark dashboard · Apple M4</div>
+    <h1>Top-K Extreme — <span>Streaming Selection</span></h1>
+    <p class="hero-sub">
+      Three C++ primitives — <code>async-membrane</code>, <code>sample-filter</code>,
+      <code>radix-select</code> — covering K from 100 to 1M.
+      23x over std::priority_queue at K=1M. Single-threaded, adversarially verified.
+    </p>
+    <div class="hero-links">
+      <a href="https://github.com/ElVec1o/top-k-extreme">&rarr; GitHub Repo</a>
+      <a href="https://github.com/ElVec1o/top-k-extreme/blob/main/README.md">README</a>
+      <a href="https://github.com/ElVec1o/top-k-extreme/blob/main/ARTICLE.md">Article</a>
+    </div>
+
+    <div class="stats-bar">
+      <div class="stat">
+        <div class="stat-label">Best small-K</div>
+        <div class="stat-value">2,084 <span class="stat-unit">Mops/s</span></div>
+      </div>
+      <div class="stat">
+        <div class="stat-label">Best large-K</div>
+        <div class="stat-value">945 <span class="stat-unit">Mops/s</span></div>
+      </div>
+      <div class="stat">
+        <div class="stat-label">Headline</div>
+        <div class="stat-value">23x <span class="stat-unit">vs stdlib</span></div>
+      </div>
+      <div class="stat">
+        <div class="stat-label">Correctness</div>
+        <div class="stat-value">100% <span class="stat-unit">probes</span></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="container">
+
+  <!-- §1 Overall Profile -->
+  <div class="section">
+    <div class="section-header">
+      <div class="section-title">&sect;1 Overall Profile</div>
+      <h2>Performance Radar — three primitives vs stdlib baselines</h2>
+      <p class="section-desc">
+        Five normalized axes covering the dimensions that distinguish streaming
+        selection primitives. Each approach has a different sweet spot; there is
+        no single winner across all K regimes.
+      </p>
+    </div>
+    <div class="chart-wrap tall">
+      <canvas id="radarChart"></canvas>
+    </div>
+  </div>
+
+  <!-- §2 Throughput by K -->
+  <div class="section">
+    <div class="section-header">
+      <div class="section-title">&sect;2 Throughput by K</div>
+      <h2>Throughput across K — 5M uniform random uint64</h2>
+      <p class="section-desc">
+        Grouped bar chart showing measured throughput (Mops/s) for each primitive
+        at five K values from 100 to 1M. Higher is better. All runs on Apple M4,
+        single-threaded, uniform random input.
+      </p>
+    </div>
+    <div class="chart-wrap tall">
+      <canvas id="throughputChart"></canvas>
+    </div>
+    <table class="cmp">
+      <thead>
+        <tr><th>Approach</th><th>K=100</th><th>K=1K</th><th>K=10K</th><th>K=100K</th><th>K=1M</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>std::priority_queue</td><td>1,635</td><td>1,545</td><td>632</td><td>145</td><td>17</td>
+        </tr>
+        <tr>
+          <td>std::nth_element</td><td>231</td><td>222</td><td>280</td><td>266</td><td>264</td>
+        </tr>
+        <tr class="hl">
+          <td>async-membrane <span class="star">&#9733;</span></td><td>2,084</td><td>2,083</td><td>1,025</td><td>269</td><td>15</td>
+        </tr>
+        <tr class="hl">
+          <td>sample-filter <span class="star">&#9733;</span></td><td>1,510</td><td>1,119</td><td>1,211</td><td>613</td><td>225</td>
+        </tr>
+        <tr class="hl">
+          <td>radix-select <span class="star">&#9733;</span></td><td>1,010</td><td>909</td><td>1,125</td><td>945</td><td>397</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- §3 Scaling Curve -->
+  <div class="section">
+    <div class="section-header">
+      <div class="section-title">&sect;3 Scaling Curve</div>
+      <h2>Scaling curve — how each primitive degrades with K</h2>
+      <p class="section-desc">
+        Log-log line chart showing throughput decay as K increases. Flat curves
+        indicate good scaling; steep drop-offs reveal regime boundaries.
+        <code>std::nth_element</code> is flat but slow; <code>async-membrane</code>
+        dominates small K but collapses at large K.
+      </p>
+    </div>
+    <div class="chart-wrap">
+      <canvas id="scalingChart"></canvas>
+    </div>
+  </div>
+
+  <!-- §4 Speedup vs stdlib -->
+  <div class="section">
+    <div class="section-header">
+      <div class="section-title">&sect;4 Speedup vs stdlib</div>
+      <h2>Speedup over std::priority_queue — per-row champion</h2>
+      <p class="section-desc">
+        For each K, we take the best of our three primitives and divide by
+        <code>std::priority_queue</code>. The speedup grows dramatically at
+        large K where the heap degrades.
+      </p>
+    </div>
+    <div class="chart-wrap">
+      <canvas id="speedupChart"></canvas>
+    </div>
+  </div>
+
+  <!-- §5 Regime Map -->
+  <div class="section">
+    <div class="section-header">
+      <div class="section-title">&sect;5 Regime Map</div>
+      <h2>Four primitives, three regimes</h2>
+      <p class="section-desc">
+        Each primitive owns a K regime. The fourth card documents the nine
+        cross-field approaches that were searched and discarded during
+        adversarial verification.
+      </p>
+    </div>
+    <div class="arch-grid">
+      <div class="arch-card">
+        <span class="arch-icon">&#128293;</span>
+        <h3>async-membrane</h3>
+        <div class="arch-sub">Threshold + double-buffer &mdash; extreme value rejection</div>
+        <ul>
+          <li><strong>Hot path:</strong> 1 threshold compare, reject &gt;99.9% of events.</li>
+          <li><strong>Reject rate:</strong> near-perfect at small K; amortized flush via nth_element.</li>
+          <li><strong>Best regime:</strong> K &le; 1K &mdash; 2,084 Mops/s at K=100.</li>
+          <li><strong>Weakness:</strong> collapses when K approaches N (threshold loses selectivity).</li>
+        </ul>
+      </div>
+      <div class="arch-card">
+        <span class="arch-icon">&#128202;</span>
+        <h3>sample-filter</h3>
+        <div class="arch-sub">Floyd-Rivest 1975 &mdash; sample-then-filter</div>
+        <ul>
+          <li><strong>Approach:</strong> draw 16K sample, find approximate pivot, single-pass filter.</li>
+          <li><strong>Single pass:</strong> touches each element once after sampling.</li>
+          <li><strong>Best regime:</strong> K = 10K &mdash; 1,211 Mops/s, balanced speed/accuracy.</li>
+          <li><strong>Weakness:</strong> sample quality degrades at extreme K/N ratios.</li>
+        </ul>
+      </div>
+      <div class="arch-card">
+        <span class="arch-icon">&#127919;</span>
+        <h3>radix-select</h3>
+        <div class="arch-sub">Radix partition &mdash; 256 L1-resident buckets</div>
+        <ul>
+          <li><strong>Approach:</strong> 4-way histogram over 8-bit digits, top-down narrowing.</li>
+          <li><strong>Complexity:</strong> O(N) with small constant; cache-friendly bucket fits in L1.</li>
+          <li><strong>Best regime:</strong> K &ge; 100K &mdash; 945 Mops/s at K=100K, 397 at K=1M.</li>
+          <li><strong>Headline:</strong> 23x over std::priority_queue at K=1M.</li>
+        </ul>
+      </div>
+      <div class="arch-card">
+        <span class="arch-icon">&#128269;</span>
+        <h3>Searched &amp; discarded</h3>
+        <div class="arch-sub">Nine fields, zero wins &mdash; cross-field falsification</div>
+        <ul>
+          <li><strong>Tropical algebra:</strong> no selection primitive found.</li>
+          <li><strong>Random matrix theory:</strong> eigenvalue methods too expensive.</li>
+          <li><strong>Coding theory:</strong> no practical decoding advantage.</li>
+          <li><strong>HDC / topology / AIT:</strong> theoretical interest, zero throughput wins.</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- §6 Live Data -->
+  <div class="section">
+    <div class="section-header">
+      <div class="section-title">&sect;6 Live Data</div>
+      <h2>Paste your <code>bench</code> output</h2>
+      <p class="section-desc">
+        Run <code>./build/bench --mode sweep --n 5000000</code> and paste the
+        output below. The dashboard re-renders with your measured numbers
+        overlaid against the baseline. Everything runs client-side.
+      </p>
+    </div>
+    <div class="form">
+      <textarea id="benchInput" class="bench" spellcheck="false" placeholder="Paste output of: ./build/bench --mode sweep --n 5000000
+
+example:
+our-async-membrane    K=100     2084.3 Mops/s
+our-async-membrane    K=1000    2083.1 Mops/s
+our-sample-filter     K=10000   1211.0 Mops/s
+our-radix-select      K=100000   945.2 Mops/s
+our-radix-select      K=1000000  397.0 Mops/s"></textarea>
+      <div class="form-actions">
+        <button class="btn primary" id="updateBtn">&#9889; Update charts</button>
+        <button class="btn" id="resetBtn">&#8634; Reset to baseline</button>
+      </div>
+      <div class="hint">
+        Recognised lines: <code>our-async-membrane ... X Mops/s</code>,
+        <code>our-sample-filter ... X Mops/s</code>,
+        <code>our-radix-select ... X Mops/s</code>.
+      </div>
+    </div>
+  </div>
+
+</div><!-- /container -->
+
+<footer>
+  elvec1o — 2026 · <a href="https://github.com/ElVec1o/top-k-extreme">github.com/ElVec1o/top-k-extreme</a> · MIT
+</footer>
+
+<script>
+/* ============================================================
+   Chart.js global theme
+   ============================================================ */
+Chart.defaults.color = '#8b949e';
+Chart.defaults.borderColor = 'rgba(255,255,255,.06)';
+Chart.defaults.font.family = "'Inter', system-ui, sans-serif";
+
+const GRAY   = '#8b949e';
+const BLUE   = '#58a6ff';
+const GREEN  = '#3fb950';
+const YELLOW = '#f59e0b';
+const CYAN   = '#06b6d4';
+const MUTED  = '#8b949e';
+
+const APPROACH_COLORS = {
+  'std::priority_queue': GRAY,
+  'std::nth_element':    BLUE,
+  'async-membrane':      GREEN,
+  'sample-filter':       YELLOW,
+  'radix-select':        CYAN,
+};
+
+/* ============================================================
+   Baseline data — measured on Apple M4
+   ============================================================ */
+const K_LABELS = ['100', '1K', '10K', '100K', '1M'];
+const K_VALUES = [100, 1000, 10000, 100000, 1000000];
+
+const BASELINE = {
+  approaches: ['std::priority_queue', 'std::nth_element', 'async-membrane', 'sample-filter', 'radix-select'],
+  throughput: {
+    'std::priority_queue': [1635, 1545, 632, 145, 17],
+    'std::nth_element':    [231,  222,  280, 266, 264],
+    'async-membrane':      [2084, 2083, 1025, 269, 15],
+    'sample-filter':       [1510, 1119, 1211, 613, 225],
+    'radix-select':        [1010, 909,  1125, 945, 397],
+  },
+  speedup: [1.27, 1.35, 1.92, 6.52, 23.35],
+};
+
+/* clone so the live-data form can overwrite without nuking baseline */
+const STATE = JSON.parse(JSON.stringify(BASELINE));
+
+/* ============================================================
+   §1 RADAR — 5 axes, normalized [0,1]
+   ============================================================ */
+const charts = {};
+{
+  const ctx = document.getElementById('radarChart').getContext('2d');
+  const profiles = {
+    'std::priority_queue': [0.80, 0.01, 0.05, 0.90, 0.80],
+    'std::nth_element':    [0.10, 0.30, 0.95, 0.60, 0.80],
+    'async-membrane':      [1.00, 0.01, 0.10, 0.70, 1.00],
+    'sample-filter':       [0.72, 0.65, 0.70, 0.50, 1.00],
+    'radix-select':        [0.48, 1.00, 0.85, 0.40, 1.00],
+  };
+  charts.radar = new Chart(ctx, {
+    type: 'radar',
+    data: {
+      labels: ['Small-K\nspeed', 'Large-K\nspeed', 'Scaling\nflatness', 'Memory\noverhead', 'Correctness\ncoverage'],
+      datasets: [
+        { label: 'async-membrane', data: profiles['async-membrane'],
+          borderColor: GREEN, backgroundColor: 'rgba(63,185,80,.25)', borderWidth: 2,
+          pointBackgroundColor: GREEN, pointRadius: 4 },
+        { label: 'sample-filter', data: profiles['sample-filter'],
+          borderColor: YELLOW, backgroundColor: 'rgba(245,158,11,.18)', borderWidth: 2,
+          pointBackgroundColor: YELLOW, pointRadius: 4 },
+        { label: 'radix-select', data: profiles['radix-select'],
+          borderColor: CYAN, backgroundColor: 'rgba(6,182,212,.25)', borderWidth: 2,
+          pointBackgroundColor: CYAN, pointRadius: 4 },
+        { label: 'std::priority_queue', data: profiles['std::priority_queue'],
+          borderColor: GRAY, backgroundColor: 'rgba(139,148,158,.12)', borderWidth: 1.5,
+          pointBackgroundColor: GRAY, pointRadius: 3, borderDash: [4,4] },
+        { label: 'std::nth_element', data: profiles['std::nth_element'],
+          borderColor: BLUE, backgroundColor: 'rgba(88,166,255,.10)', borderWidth: 1.5,
+          pointBackgroundColor: BLUE, pointRadius: 3, borderDash: [4,4] },
+      ]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      scales: {
+        r: {
+          min: 0, max: 1, ticks: { display: false, stepSize: 0.2 },
+          angleLines: { color: 'rgba(255,255,255,.08)' },
+          grid: { color: 'rgba(255,255,255,.08)' },
+          pointLabels: { color: '#e6edf3', font: { size: 12, weight: '500' } }
+        }
+      },
+      plugins: {
+        legend: { position: 'bottom', labels: { padding: 16, usePointStyle: true, pointStyleWidth: 10 } }
+      }
+    }
+  });
+}
+
+/* ============================================================
+   §2 THROUGHPUT BY K — grouped bar (vertical)
+   ============================================================ */
+{
+  const ctx = document.getElementById('throughputChart').getContext('2d');
+  const datasets = BASELINE.approaches.map(name => ({
+    label: name,
+    data: STATE.throughput[name],
+    backgroundColor: APPROACH_COLORS[name],
+    borderRadius: 4,
+    borderSkipped: false,
+  }));
+  charts.throughput = new Chart(ctx, {
+    type: 'bar',
+    data: { labels: K_LABELS, datasets },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      scales: {
+        y: { title: { display: true, text: 'Throughput (Mops/s)' },
+             grid: { color: 'rgba(255,255,255,.05)' } },
+        x: { grid: { display: false } }
+      },
+      plugins: { legend: { position: 'top', labels: { usePointStyle: true, pointStyleWidth: 10 } } }
+    }
+  });
+}
+
+/* ============================================================
+   §3 SCALING CURVE — line chart (log-log)
+   ============================================================ */
+{
+  const ctx = document.getElementById('scalingChart').getContext('2d');
+  const datasets = BASELINE.approaches.map(name => ({
+    label: name,
+    data: K_VALUES.map((k, i) => ({ x: k, y: STATE.throughput[name][i] })),
+    borderColor: APPROACH_COLORS[name],
+    backgroundColor: APPROACH_COLORS[name],
+    borderWidth: 2.5,
+    pointRadius: 5,
+    pointHoverRadius: 8,
+    tension: 0.3,
+    fill: false,
+    borderDash: (name.startsWith('std::')) ? [6, 3] : [],
+  }));
+  charts.scaling = new Chart(ctx, {
+    type: 'line',
+    data: { datasets },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      scales: {
+        x: { type: 'logarithmic', title: { display: true, text: 'K (log scale)' },
+             grid: { color: 'rgba(255,255,255,.05)' },
+             ticks: { callback: v => v >= 1000000 ? '1M' : v >= 1000 ? (v/1000)+'K' : v } },
+        y: { type: 'logarithmic', title: { display: true, text: 'Throughput Mops/s (log scale)' },
+             grid: { color: 'rgba(255,255,255,.05)' } }
+      },
+      plugins: { legend: { position: 'top', labels: { usePointStyle: true, pointStyleWidth: 10 } } }
+    }
+  });
+}
+
+/* ============================================================
+   §4 SPEEDUP VS STDLIB — bar chart
+   ============================================================ */
+{
+  const ctx = document.getElementById('speedupChart').getContext('2d');
+  charts.speedup = new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels: K_LABELS,
+      datasets: [{
+        label: 'Speedup (best ours / std::priority_queue)',
+        data: STATE.speedup,
+        backgroundColor: K_LABELS.map((_, i) =>
+          STATE.speedup[i] >= 10 ? CYAN : STATE.speedup[i] >= 3 ? YELLOW : GREEN
+        ),
+        borderRadius: 6,
+        borderSkipped: false,
+      }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      scales: {
+        y: { title: { display: true, text: 'Speedup factor (x)' },
+             grid: { color: 'rgba(255,255,255,.05)' } },
+        x: { grid: { display: false } }
+      },
+      plugins: {
+        legend: { display: false },
+        tooltip: { callbacks: { label: ctx => ctx.parsed.y.toFixed(2) + 'x' } }
+      }
+    }
+  });
+}
+
+/* ============================================================
+   §6 LIVE DATA — parse bench output and update charts
+   ============================================================ */
+function parseBench(text) {
+  const results = {};
+  const lines = text.split('\n');
+  for (const line of lines) {
+    let m;
+    // Match: our-async-membrane  K=100  2084.3 Mops/s
+    m = /our-(async-membrane|sample-filter|radix-select)\s+.*?K\s*=\s*(\d+)\s+.*?([\d.]+)\s*Mops\/s/i.exec(line);
+    if (m) {
+      const name = m[1];
+      const k = parseInt(m[2]);
+      const mops = parseFloat(m[3]);
+      if (!results[name]) results[name] = {};
+      results[name][k] = mops;
+    }
+  }
+  return results;
+}
+
+function applyParsed(parsed) {
+  const kMap = { 100: 0, 1000: 1, 10000: 2, 100000: 3, 1000000: 4 };
+  for (const [name, kvals] of Object.entries(parsed)) {
+    if (STATE.throughput[name]) {
+      for (const [k, mops] of Object.entries(kvals)) {
+        const idx = kMap[parseInt(k)];
+        if (idx !== undefined) STATE.throughput[name][idx] = mops;
+      }
+    }
+  }
+  // Recompute speedup
+  const pq = STATE.throughput['std::priority_queue'];
+  for (let i = 0; i < 5; i++) {
+    const best = Math.max(
+      STATE.throughput['async-membrane'][i],
+      STATE.throughput['sample-filter'][i],
+      STATE.throughput['radix-select'][i]
+    );
+    STATE.speedup[i] = parseFloat((best / pq[i]).toFixed(2));
+  }
+}
+
+function rerenderAll() {
+  // Update throughput chart
+  BASELINE.approaches.forEach((name, di) => {
+    charts.throughput.data.datasets[di].data = STATE.throughput[name];
+  });
+  charts.throughput.update();
+
+  // Update scaling chart
+  BASELINE.approaches.forEach((name, di) => {
+    charts.scaling.data.datasets[di].data = K_VALUES.map((k, i) => ({ x: k, y: STATE.throughput[name][i] }));
+  });
+  charts.scaling.update();
+
+  // Update speedup chart
+  charts.speedup.data.datasets[0].data = STATE.speedup;
+  charts.speedup.data.datasets[0].backgroundColor = K_LABELS.map((_, i) =>
+    STATE.speedup[i] >= 10 ? CYAN : STATE.speedup[i] >= 3 ? YELLOW : GREEN
+  );
+  charts.speedup.update();
+}
+
+document.getElementById('updateBtn').addEventListener('click', () => {
+  const txt = document.getElementById('benchInput').value;
+  const parsed = parseBench(txt);
+  if (Object.keys(parsed).length === 0) {
+    alert('No recognised lines found. Expected output of: ./build/bench --mode sweep --n 5000000');
+    return;
+  }
+  applyParsed(parsed);
+  rerenderAll();
+});
+
+document.getElementById('resetBtn').addEventListener('click', () => {
+  Object.assign(STATE, JSON.parse(JSON.stringify(BASELINE)));
+  rerenderAll();
+});
+
+</script>
+</body>
+</html>

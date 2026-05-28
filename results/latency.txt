@@ -1,0 +1,18 @@
+[latency] N=5000000 K=1000 dup=0.20 dist=uniform
+  stdlib-heap               p50=0.4 p90=0.6 p99=1.9 p99.9=10.1 max=19.4 ns/item
+  our-async                 p50=0.3 p90=0.4 p99=0.8 p99.9=1.4 max=28.9 ns/item
+  dedup-absl-heap           p50=35.0 p90=40.8 p99=65.9 p99.9=538.2 max=820.4 ns/item
+  our-pipeline-RANK         p50=0.4 p90=0.9 p99=3.6 p99.9=26.4 max=46.3 ns/item
+{
+  "mode": "latency",
+  "dist": "uniform",
+  "n": 5000000.000000,
+  "k": 1000.000000,
+  "dup_ratio": 0.200000,
+  "results": [
+    {"name":"stdlib-heap","p50":0.4072,"p90":0.6104,"p99":1.9121,"p999":10.1318,"max":19.3682,"mean":0.5267},
+    {"name":"our-async","p50":0.2842,"p90":0.3662,"p99":0.7734,"p999":1.3838,"max":28.9307,"mean":0.3041},
+    {"name":"dedup-absl-heap","p50":34.9531,"p90":40.7715,"p99":65.9180,"p999":538.2080,"max":820.3525,"mean":37.7099},
+    {"name":"our-pipeline-RANK","p50":0.4072,"p90":0.8545,"p99":3.6211,"p999":26.4482,"max":46.3467,"mean":0.5763}
+  ]
+}

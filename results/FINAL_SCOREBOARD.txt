@@ -1,0 +1,16 @@
+=== ALGO-4 final K-sweep (median of 3 runs, M4 mac mini, single core) ===
+                       K=100   K=1K    K=10K   K=100K  K=1M    (Mops/s)
+stdlib-heap            1923    1671    830     157     29
+stdlib-nth_element     263     302     303     275     284
+our-async              3033    3054    1927    332     18
+our-sample-filter      2706    2777    2135    701     258
+                                               ^^^     ^^^
+                                               2.1x    9x vs heap, ties nth
+
+Verdict:
+  K <= 1K   : our-async wins
+  K=10K     : our-sample-filter ties our-async
+  K=100K    : our-sample-filter wins 2.1x over previous best
+  K=1M      : our-sample-filter wins 9x vs std-heap, ties std-nth_element
+              (offline) and beats our-async by 14x
+

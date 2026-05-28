@@ -1,0 +1,63 @@
+[dist=uniform]
+  stdlib-heap                    1.71 ms       1759.1 Mops/s
+  stdlib-nth_element            12.58 ms        238.4 Mops/s
+  our-membrane                   0.95 ms       3159.1 Mops/s
+  our-async                      1.06 ms       2843.0 Mops/s
+  dedup-stdlib-heap            220.40 ms         13.6 Mops/s
+  dedup-absl-heap               92.88 ms         32.3 Mops/s
+  dedup-fastset-heap            37.46 ms         80.1 Mops/s
+  our-pipeline-RANK              1.86 ms       1611.3 Mops/s
+  our-pipeline-FILTER           25.12 ms        119.4 Mops/s
+[dist=sorted-asc]
+  stdlib-heap                   30.39 ms         98.7 Mops/s
+  stdlib-nth_element             3.25 ms        922.9 Mops/s
+  our-membrane                   7.16 ms        419.1 Mops/s
+  our-async                      4.76 ms        630.2 Mops/s
+  dedup-stdlib-heap            226.66 ms         13.2 Mops/s
+  dedup-absl-heap              111.86 ms         26.8 Mops/s
+  dedup-fastset-heap           103.63 ms         28.9 Mops/s
+  our-pipeline-RANK             26.58 ms        112.9 Mops/s
+  our-pipeline-FILTER           27.61 ms        108.7 Mops/s
+[dist=sorted-desc]
+  stdlib-heap                    1.47 ms       2035.3 Mops/s
+  stdlib-nth_element             3.15 ms        952.8 Mops/s
+  our-membrane                   0.74 ms       4049.3 Mops/s
+  our-async                      0.76 ms       3926.3 Mops/s
+  dedup-stdlib-heap            182.03 ms         16.5 Mops/s
+  dedup-absl-heap               85.28 ms         35.2 Mops/s
+  dedup-fastset-heap            30.45 ms         98.5 Mops/s
+  our-pipeline-RANK              1.15 ms       2607.0 Mops/s
+  our-pipeline-FILTER           70.86 ms         42.3 Mops/s
+[dist=zipf]
+  stdlib-heap                    1.67 ms       1797.2 Mops/s
+  stdlib-nth_element            10.32 ms        290.7 Mops/s
+  our-membrane                   0.92 ms       3244.8 Mops/s
+  our-async                      0.97 ms       3087.5 Mops/s
+  dedup-stdlib-heap              5.90 ms        508.4 Mops/s
+  dedup-absl-heap                8.88 ms        337.8 Mops/s
+  dedup-fastset-heap             3.95 ms        758.6 Mops/s
+  our-pipeline-RANK              1.34 ms       2245.3 Mops/s
+  our-pipeline-FILTER           23.75 ms        126.3 Mops/s
+[dist=lognormal]
+  stdlib-heap                    1.76 ms       1705.8 Mops/s
+  stdlib-nth_element             3.42 ms        877.3 Mops/s
+  our-membrane                   1.03 ms       2916.5 Mops/s
+  our-async                      1.08 ms       2788.9 Mops/s
+  dedup-stdlib-heap            222.11 ms         13.5 Mops/s
+  dedup-absl-heap               87.03 ms         34.5 Mops/s
+  dedup-fastset-heap            32.57 ms         92.1 Mops/s
+  our-pipeline-RANK              1.72 ms       1742.7 Mops/s
+  our-pipeline-FILTER           25.64 ms        117.0 Mops/s
+{
+  "mode": "distribution",
+  "n": 3000000.000000,
+  "k": 1000.000000,
+  "dup_ratio": 0.200000,
+  "runs": [
+    {"dist":"uniform","results":[{"name":"stdlib-heap","dedup":false,"ms":1.7054,"mops":1759.1016},{"name":"stdlib-nth_element","dedup":false,"ms":12.5846,"mops":238.3869},{"name":"our-membrane","dedup":false,"ms":0.9496,"mops":3159.1418},{"name":"our-async","dedup":false,"ms":1.0552,"mops":2843.0414},{"name":"dedup-stdlib-heap","dedup":true,"ms":220.4000,"mops":13.6116},{"name":"dedup-absl-heap","dedup":true,"ms":92.8833,"mops":32.2986},{"name":"dedup-fastset-heap","dedup":true,"ms":37.4576,"mops":80.0905},{"name":"our-pipeline-RANK","dedup":true,"ms":1.8619,"mops":1611.2790},{"name":"our-pipeline-FILTER","dedup":true,"ms":25.1239,"mops":119.4081}]},
+    {"dist":"sorted-asc","results":[{"name":"stdlib-heap","dedup":false,"ms":30.3927,"mops":98.7080},{"name":"stdlib-nth_element","dedup":false,"ms":3.2507,"mops":922.8878},{"name":"our-membrane","dedup":false,"ms":7.1587,"mops":419.0724},{"name":"our-async","dedup":false,"ms":4.7604,"mops":630.2025},{"name":"dedup-stdlib-heap","dedup":true,"ms":226.6559,"mops":13.2359},{"name":"dedup-absl-heap","dedup":true,"ms":111.8605,"mops":26.8191},{"name":"dedup-fastset-heap","dedup":true,"ms":103.6272,"mops":28.9499},{"name":"our-pipeline-RANK","dedup":true,"ms":26.5830,"mops":112.8541},{"name":"our-pipeline-FILTER","dedup":true,"ms":27.6101,"mops":108.6558}]},
+    {"dist":"sorted-desc","results":[{"name":"stdlib-heap","dedup":false,"ms":1.4740,"mops":2035.2782},{"name":"stdlib-nth_element","dedup":false,"ms":3.1487,"mops":952.7841},{"name":"our-membrane","dedup":false,"ms":0.7409,"mops":4049.2661},{"name":"our-async","dedup":false,"ms":0.7641,"mops":3926.2750},{"name":"dedup-stdlib-heap","dedup":true,"ms":182.0327,"mops":16.4806},{"name":"dedup-absl-heap","dedup":true,"ms":85.2798,"mops":35.1783},{"name":"dedup-fastset-heap","dedup":true,"ms":30.4464,"mops":98.5338},{"name":"our-pipeline-RANK","dedup":true,"ms":1.1507,"mops":2606.9954},{"name":"our-pipeline-FILTER","dedup":true,"ms":70.8572,"mops":42.3387}]},
+    {"dist":"zipf","results":[{"name":"stdlib-heap","dedup":false,"ms":1.6693,"mops":1797.1702},{"name":"stdlib-nth_element","dedup":false,"ms":10.3184,"mops":290.7423},{"name":"our-membrane","dedup":false,"ms":0.9245,"mops":3244.8499},{"name":"our-async","dedup":false,"ms":0.9717,"mops":3087.4775},{"name":"dedup-stdlib-heap","dedup":true,"ms":5.9006,"mops":508.4207},{"name":"dedup-absl-heap","dedup":true,"ms":8.8803,"mops":337.8283},{"name":"dedup-fastset-heap","dedup":true,"ms":3.9545,"mops":758.6215},{"name":"our-pipeline-RANK","dedup":true,"ms":1.3361,"mops":2245.2989},{"name":"our-pipeline-FILTER","dedup":true,"ms":23.7502,"mops":126.3147}]},
+    {"dist":"lognormal","results":[{"name":"stdlib-heap","dedup":false,"ms":1.7588,"mops":1705.7569},{"name":"stdlib-nth_element","dedup":false,"ms":3.4197,"mops":877.2784},{"name":"our-membrane","dedup":false,"ms":1.0286,"mops":2916.5148},{"name":"our-async","dedup":false,"ms":1.0757,"mops":2788.8609},{"name":"dedup-stdlib-heap","dedup":true,"ms":222.1108,"mops":13.5068},{"name":"dedup-absl-heap","dedup":true,"ms":87.0329,"mops":34.4697},{"name":"dedup-fastset-heap","dedup":true,"ms":32.5697,"mops":92.1100},{"name":"our-pipeline-RANK","dedup":true,"ms":1.7215,"mops":1742.7088},{"name":"our-pipeline-FILTER","dedup":true,"ms":25.6401,"mops":117.0041}]}
+  ]
+}
